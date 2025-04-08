@@ -174,6 +174,125 @@ session_start();
             max-height: 50px;
             width: auto;
         }
+
+        /* Restaurant card standardization */
+        .restaurant-listing {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .single-restaurant {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+        }
+
+        .single-restaurant:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+        }
+
+        .restaurant-wrap {
+            padding: 20px;
+            background: #fff;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border: none;
+            box-shadow: none;
+        }
+
+        .restaurant-logo {
+            display: block;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 10px;
+        }
+
+        .restaurant-logo img {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .restaurant-info {
+            text-align: left;
+            padding: 0 10px;
+        }
+
+        .restaurant-wrap h5 {
+            font-size: 18px;
+            margin: 0 0 8px 0;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .restaurant-wrap h5 a {
+            color: #333;
+            text-decoration: none;
+        }
+
+        .restaurant-wrap span {
+            color: #666;
+            font-size: 14px;
+            display: block;
+        }
+
+        @media (max-width: 991px) {
+            .restaurant-listing {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .restaurant-listing {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+
+        /* Update restaurant filter styles */
+        .restaurants-filter {
+            margin-bottom: 30px;
+            text-align: right;
+        }
+
+        .restaurants-filter ul {
+            padding: 0;
+            margin: 0;
+            display: inline-flex;
+            gap: 10px;
+        }
+
+        .restaurants-filter ul li {
+            display: inline-block;
+        }
+
+        .restaurants-filter ul li a {
+            color: #333;
+            text-decoration: none;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #f5f5f5;
+        }
+
+        .restaurants-filter ul li a.selected,
+        .restaurants-filter ul li a:hover {
+            background: #65BE9C;
+            color: white;
+        }
     </style>
 </head>
 
@@ -325,59 +444,70 @@ session_start();
 									$res= mysqli_query($db,"select * from res_category");
 									      while($row=mysqli_fetch_array($res))
 										  {
-											echo '<li><a href="#" data-filter=".'.$row['c_name'].'"> '.$row['c_name'].'</a> </li>';
+											echo '<li><a href="#" data-filter=".'.$row['c_name'].'">'.$row['c_name'].'</a> </li>';
 										  }
 									?>
-                                   
                                 </ul>
                             </nav>
                         </div>
-          
                     </div>
                 </div>
     
                 <div class="row">
                     <div class="restaurant-listing">
+                        <?php  
+                        $ress = mysqli_query($db,"SELECT r.*, c.c_name 
+                                                FROM restaurant r 
+                                                JOIN res_category c ON r.c_id = c.c_id 
+                                                GROUP BY r.title 
+                                                ORDER BY r.rs_id DESC");
                         
-						
-						<?php  
-						$ress= mysqli_query($db,"select * from restaurant");  
-									      while($rows=mysqli_fetch_array($ress))
-										  {
-													
-													$query= mysqli_query($db,"select * from res_category where c_id='".$rows['c_id']."' ");
-													 $rowss=mysqli_fetch_array($query);
-						
-													 echo ' <div class="col-xs-12 col-sm-12 col-md-6 single-restaurant all '.$rowss['c_name'].'">
-														<div class="restaurant-wrap">
-															<div class="row">
-																<div class="col-xs-12 col-sm-3 col-md-12 col-lg-3 text-xs-center">
-																	<a class="restaurant-logo" href="dishes.php?res_id='.$rows['rs_id'].'" > <img src="admin/Res_img/'.$rows['image'].'" alt="Restaurant logo"> </a>
-																</div>
-													
-																<div class="col-xs-12 col-sm-9 col-md-12 col-lg-9">
-																	<h5><a href="dishes.php?res_id='.$rows['rs_id'].'" >'.$rows['title'].'</a></h5> <span>'.$rows['address'].'</span>
-																</div>
-													
-															</div>
-												
-														</div>
-												
-													</div>';
-										  }
-						
-						
-						?>
-						
-							
-						
-					
+                        while($rows = mysqli_fetch_array($ress))
+                        {
+                            echo '<div class="single-restaurant all '.$rows['c_name'].'">
+                                <div class="restaurant-wrap">
+                                    <div class="restaurant-logo">
+                                        <a href="dishes.php?res_id='.$rows['rs_id'].'"> 
+                                            <img src="admin/Res_img/'.$rows['image'].'" alt="Restaurant logo"> 
+                                        </a>
+                                    </div>
+                                    <div class="restaurant-info">
+                                        <h5><a href="dishes.php?res_id='.$rows['rs_id'].'">'.$rows['title'].'</a></h5>
+                                        <span>'.$rows['address'].'</span>
+                                    </div>
+                                </div>
+                            </div>';
+                        }
+                        ?>
                     </div>
                 </div>
-     
-               
             </div>
         </section>
+
+        <script>
+            // Initialize Isotope for filtering
+            $(document).ready(function() {
+                var $grid = $('.restaurant-listing').isotope({
+                    itemSelector: '.single-restaurant'
+                });
+
+                // Filter items on button click
+                $('.restaurants-filter ul li a').click(function(e) {
+                    e.preventDefault();
+                    var filterValue = $(this).attr('data-filter');
+                    
+                    // Remove selected class from all and add to current
+                    $('.restaurants-filter ul li a').removeClass('selected');
+                    $(this).addClass('selected');
+                    
+                    if(filterValue === '*') {
+                        $grid.isotope({ filter: '*' });
+                    } else {
+                        $grid.isotope({ filter: filterValue });
+                    }
+                });
+            });
+        </script>
         
       
         <footer class="footer">

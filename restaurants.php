@@ -202,7 +202,11 @@ session_start();
                         <div class="col-xs-12 col-sm-7 col-md-7 col-lg-9">
                             <div class="bg-gray restaurant-entry">
                                 <div class="row">
-								<?php $ress= mysqli_query($db,"select * from restaurant");
+								<?php $ress= mysqli_query($db,"SELECT DISTINCT r.*, c.c_name 
+                                                               FROM restaurant r 
+                                                               JOIN res_category c ON r.c_id = c.c_id 
+                                                               GROUP BY r.title 
+                                                               ORDER BY r.rs_id DESC");
 									      while($rows=mysqli_fetch_array($ress))
 										  {
 													
