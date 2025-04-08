@@ -19,33 +19,32 @@ if(empty($_SESSION["user_id"]))
 	header('location:login.php');
 }
 else{
+    $item_total = 0;
+    foreach ($_SESSION["cart_item"] as $item)
+    {
+        $item_total += ($item["price"]*$item["quantity"]);
+    }
 
-										  
-												foreach ($_SESSION["cart_item"] as $item)
-												{
-											
-												$item_total += ($item["price"]*$item["quantity"]);
-												
-													if($_POST['submit'])
-													{
-						
-													$SQL="insert into users_orders(u_id,title,quantity,price) values('".$_SESSION["user_id"]."','".$item["title"]."','".$item["quantity"]."','".$item["price"]."')";
-						
-														mysqli_query($db,$SQL);
-														
-                                                        
-                                                        unset($_SESSION["cart_item"]);
-                                                        unset($item["title"]);
-                                                        unset($item["quantity"]);
-                                                        unset($item["price"]);
-														$success = "Thank you. Your order has been placed!";
-
-                                                        function_alert();
-
-														
-														
-													}
-												}
+    if(isset($_POST['submit'])) {
+        $payment_method = $_POST['mod'];
+        
+        if($payment_method == 'COD') {
+            // Handle Cash on Delivery
+            foreach ($_SESSION["cart_item"] as $item) {
+                $SQL = "INSERT INTO users_orders(u_id, title, quantity, price, payment_method, payment_status, status) 
+                        VALUES ('".$_SESSION["user_id"]."', '".$item["title"]."', '".$item["quantity"]."', 
+                                '".$item["price"]."', 'COD', 'pending', 'in process')";
+                mysqli_query($db, $SQL);
+            }
+            
+            unset($_SESSION["cart_item"]);
+            $success = "Thank you. Your order has been placed!";
+            function_alert();
+        } else if($payment_method == 'khalti') {
+            // Khalti payment will be handled by the JavaScript
+            // No need to process here as it's handled by initiate_payment.php
+        }
+    }
 ?>
 
 
@@ -61,7 +60,10 @@ else{
     <link href="css/font-awesome.min.css" rel="stylesheet">
     <link href="css/animsition.min.css" rel="stylesheet">
     <link href="css/animate.css" rel="stylesheet">
-    <link href="css/style.css" rel="stylesheet"> </head>
+    <link href="css/style.css" rel="stylesheet">
+    <!-- Khalti SDK -->
+    <script src="https://khalti.s3.ap-south-1.amazonaws.com/KPG/dist/2020.12.22.0.0.0/khalti-checkout.iffe.js"></script>
+</head>
 <body>
     
     <div class="site-wrapper">
@@ -140,7 +142,7 @@ else{
 											   
                                                     <tr>
                                                         <td>Cart Subtotal</td>
-                                                        <td> <?php echo "$".$item_total; ?></td>
+                                                        <td> <?php echo "Rs. ".$item_total; ?></td>
                                                     </tr>
                                                     <tr>
                                                         <td>Delivery Charges</td>
@@ -148,7 +150,7 @@ else{
                                                     </tr>
                                                     <tr>
                                                         <td class="text-color"><strong>Total</strong></td>
-                                                        <td class="text-color"><strong> <?php echo "$".$item_total; ?></strong></td>
+                                                        <td class="text-color"><strong> <?php echo "Rs. ".$item_total; ?></strong></td>
                                                     </tr>
                                                 </tbody>
 												
@@ -167,10 +169,13 @@ else{
                                             </li>
                                             <li>
                                                 <label class="custom-control custom-radio  m-b-10">
-                                                    <input name="mod"  type="radio" value="paypal" disabled class="custom-control-input"> <span class="custom-control-indicator"></span> <span class="custom-control-description">Paypal <img src="images/paypal.jpg" alt="" width="90"></span> </label>
+                                                    <input name="mod" id="radioStacked2" value="khalti" type="radio" class="custom-control-input"> <span class="custom-control-indicator"></span> <span class="custom-control-description">Pay with Khalti <img src="images/khalti.png" alt="Khalti" width="90"></span>
+                                                </label>
                                             </li>
                                         </ul>
-                                        <p class="text-xs-center"> <input type="submit" onclick="return confirm('Do you want to confirm the order?');" name="submit"  class="btn btn-success btn-block" value="Order Now"> </p>
+                                        <p class="text-xs-center"> 
+                                            <input type="submit" onclick="return handlePayment(event);" name="submit" class="btn btn-success btn-block" value="Order Now"> 
+                                        </p>
                                     </div>
 									</form>
                                 </div>
@@ -229,6 +234,38 @@ else{
     <script src="js/jquery.isotope.min.js"></script>
     <script src="js/headroom.js"></script>
     <script src="js/foodpicky.min.js"></script>
+    <script>
+        function handlePayment(e) {
+            if(document.getElementById('radioStacked2').checked) {
+                e.preventDefault();
+                // Initiate payment first
+                fetch('initiate_payment.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.payment_url) {
+                        // Redirect to Khalti payment page
+                        window.location.href = data.payment_url;
+                    } else {
+                        alert('Payment initiation failed. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Payment initiation failed. Please try again.');
+                });
+            } else {
+                // For COD, just confirm and let the form submit
+                if(!confirm('Do you want to confirm the order?')) {
+                    e.preventDefault();
+                }
+            }
+        }
+    </script>
 </body>
 
 </html>

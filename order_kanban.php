@@ -197,24 +197,24 @@ if(empty($_SESSION['user_id']))
                         <!-- To Do Column -->
                         <div class="kanban-column">
                             <div class="column-header">
-                                <span>To Do</span>
+                                <span>In Processing</span>
                                 <?php 
-                                $todo_count = mysqli_num_rows(mysqli_query($db,"SELECT * FROM users_orders WHERE u_id='".$_SESSION['user_id']."' AND (status = '' OR status IS NULL)"));
+                                $todo_count = mysqli_num_rows(mysqli_query($db,"SELECT * FROM users_orders WHERE u_id='".$_SESSION['user_id']."' AND status = 'in process'"));
                                 ?>
                                 <span class="count"><?php echo $todo_count; ?></span>
                             </div>
                             <?php 
-                            $query_todo = mysqli_query($db,"SELECT * FROM users_orders WHERE u_id='".$_SESSION['user_id']."' AND (status = '' OR status IS NULL)");
+                            $query_todo = mysqli_query($db,"SELECT * FROM users_orders WHERE u_id='".$_SESSION['user_id']."' AND status = 'in process'");
                             while($row = mysqli_fetch_array($query_todo)) {
                             ?>
                             <div class="order-card">
-                                <div class="priority high">New Order</div>
+                                <div class="priority high">Processing</div>
                                 <div class="title"><?php echo $row['title']; ?></div>
                                 <div class="meta">Order #<?php echo $row['o_id']; ?></div>
                                 <div class="meta">Quantity: <?php echo $row['quantity']; ?></div>
-                                <div class="price">$<?php echo $row['price']; ?></div>
+                                <div class="price">Rs. <?php echo $row['price']; ?></div>
                                 <div class="meta">Date: <?php echo $row['date']; ?></div>
-                                <div class="status-label pending">Pending</div>
+                                <div class="status-label pending">In Processing</div>
                             </div>
                             <?php } ?>
                         </div>
@@ -222,24 +222,24 @@ if(empty($_SESSION['user_id']))
                         <!-- In Processing Column -->
                         <div class="kanban-column">
                             <div class="column-header">
-                                <span>In Processing</span>
+                                <span>On The Way</span>
                                 <?php 
-                                $processing_count = mysqli_num_rows(mysqli_query($db,"SELECT * FROM users_orders WHERE u_id='".$_SESSION['user_id']."' AND status = 'in process'"));
+                                $processing_count = mysqli_num_rows(mysqli_query($db,"SELECT * FROM users_orders WHERE u_id='".$_SESSION['user_id']."' AND status = 'on the way'"));
                                 ?>
                                 <span class="count"><?php echo $processing_count; ?></span>
                             </div>
                             <?php 
-                            $query_processing = mysqli_query($db,"SELECT * FROM users_orders WHERE u_id='".$_SESSION['user_id']."' AND status = 'in process'");
+                            $query_processing = mysqli_query($db,"SELECT * FROM users_orders WHERE u_id='".$_SESSION['user_id']."' AND status = 'on the way'");
                             while($row = mysqli_fetch_array($query_processing)) {
                             ?>
                             <div class="order-card">
-                                <div class="priority medium">Processing</div>
+                                <div class="priority medium">On The Way</div>
                                 <div class="title"><?php echo $row['title']; ?></div>
                                 <div class="meta">Order #<?php echo $row['o_id']; ?></div>
                                 <div class="meta">Quantity: <?php echo $row['quantity']; ?></div>
-                                <div class="price">$<?php echo $row['price']; ?></div>
+                                <div class="price">Rs. <?php echo $row['price']; ?></div>
                                 <div class="meta">Date: <?php echo $row['date']; ?></div>
-                                <div class="status-label processing">In Kitchen</div>
+                                <div class="status-label processing">On The Way</div>
                             </div>
                             <?php } ?>
                         </div>
@@ -247,47 +247,22 @@ if(empty($_SESSION['user_id']))
                         <!-- On The Way Column -->
                         <div class="kanban-column">
                             <div class="column-header">
-                                <span>On The Way</span>
+                                <span>Delivered</span>
                                 <?php 
-                                $onway_count = mysqli_num_rows(mysqli_query($db,"SELECT * FROM users_orders WHERE u_id='".$_SESSION['user_id']."' AND status = 'on_the_way'"));
+                                $onway_count = mysqli_num_rows(mysqli_query($db,"SELECT * FROM users_orders WHERE u_id='".$_SESSION['user_id']."' AND status = 'closed'"));
                                 ?>
                                 <span class="count"><?php echo $onway_count; ?></span>
                             </div>
                             <?php 
-                            $query_onway = mysqli_query($db,"SELECT * FROM users_orders WHERE u_id='".$_SESSION['user_id']."' AND status = 'on_the_way'");
+                            $query_onway = mysqli_query($db,"SELECT * FROM users_orders WHERE u_id='".$_SESSION['user_id']."' AND status = 'closed'");
                             while($row = mysqli_fetch_array($query_onway)) {
                             ?>
                             <div class="order-card">
-                                <div class="priority medium">Out for Delivery</div>
+                                <div class="priority low">Delivered</div>
                                 <div class="title"><?php echo $row['title']; ?></div>
                                 <div class="meta">Order #<?php echo $row['o_id']; ?></div>
                                 <div class="meta">Quantity: <?php echo $row['quantity']; ?></div>
-                                <div class="price">$<?php echo $row['price']; ?></div>
-                                <div class="meta">Date: <?php echo $row['date']; ?></div>
-                                <div class="status-label onway">On The Way</div>
-                            </div>
-                            <?php } ?>
-                        </div>
-
-                        <!-- Delivered Column -->
-                        <div class="kanban-column">
-                            <div class="column-header">
-                                <span>Delivered</span>
-                                <?php 
-                                $delivered_count = mysqli_num_rows(mysqli_query($db,"SELECT * FROM users_orders WHERE u_id='".$_SESSION['user_id']."' AND status = 'closed'"));
-                                ?>
-                                <span class="count"><?php echo $delivered_count; ?></span>
-                            </div>
-                            <?php 
-                            $query_delivered = mysqli_query($db,"SELECT * FROM users_orders WHERE u_id='".$_SESSION['user_id']."' AND status = 'closed' ORDER BY date DESC LIMIT 5");
-                            while($row = mysqli_fetch_array($query_delivered)) {
-                            ?>
-                            <div class="order-card">
-                                <div class="priority low">Completed</div>
-                                <div class="title"><?php echo $row['title']; ?></div>
-                                <div class="meta">Order #<?php echo $row['o_id']; ?></div>
-                                <div class="meta">Quantity: <?php echo $row['quantity']; ?></div>
-                                <div class="price">$<?php echo $row['price']; ?></div>
+                                <div class="price">Rs. <?php echo $row['price']; ?></div>
                                 <div class="meta">Date: <?php echo $row['date']; ?></div>
                                 <div class="status-label delivered">Delivered</div>
                             </div>

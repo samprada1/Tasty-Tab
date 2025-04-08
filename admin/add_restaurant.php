@@ -314,10 +314,10 @@ if(isset($_POST['submit']))
                                                     <label class="control-label">Open Days</label>
                                                     <select name="o_days" class="form-control custom-select" data-placeholder="Choose a Category" tabindex="1">
                                                         <option>--Select your Days--</option>
-                                                        <option value="Mon-Tue">Mon-Tue</option>
+                                                        <option value="Mon-Tue">Mon-Sat</option>
                                                         <option value="Mon-Wed">Mon-Wed</option> 
-														<option value="Mon-Thu">Mon-Thu</option>
-														<option value="Mon-Fri">Mon-Fri</option>
+														<option value="Mon-Thu">Sun-Fri</option>
+														<option value="Mon-Fri">Sun-Sat</option>
 														<option value="Mon-Sat">Mon-Sat</option>
 														<option value="24hr-x7">24hr-x7</option>
                                                     </select>

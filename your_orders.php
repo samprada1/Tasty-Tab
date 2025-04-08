@@ -238,14 +238,16 @@ only screen and (max-width: 760px),
                                                     <tr>    
                                                         <td data-column="Item"><?php echo $row['title']; ?></td>
                                                         <td data-column="Quantity"><?php echo $row['quantity']; ?></td>
-                                                        <td data-column="price">$<?php echo $row['price']; ?></td>
+                                                        <td data-column="price">Rs. <?php echo $row['price']; ?></td>
                                                         <td data-column="status">
                                                             <?php 
                                                             $status = $row['status'];
                                                             if($status == "" || $status == "NULL") {
                                                                 echo '<button type="button" class="btn btn-info"><span class="fa fa-bars" aria-hidden="true"></span> Dispatch</button>';
                                                             } else if($status == "in process") {
-                                                                echo '<button type="button" class="btn btn-warning"><span class="fa fa-cog fa-spin" aria-hidden="true"></span> On The Way!</button>';
+                                                                echo '<button type="button" class="btn btn-warning"><span class="fa fa-cog fa-spin" aria-hidden="true"></span> In Processing</button>';
+                                                            } else if($status == "on the way") {
+                                                                echo '<button type="button" class="btn btn-info"><span class="fa fa-motorcycle" aria-hidden="true"></span> On The Way</button>';
                                                             } else if($status == "closed") {
                                                                 echo '<button type="button" class="btn btn-success"><span class="fa fa-check-circle" aria-hidden="true"></span> Delivered</button>';
                                                             } else if($status == "rejected") {
@@ -303,7 +305,7 @@ only screen and (max-width: 760px),
                                                         <td data-column="Order ID">#<?php echo $row['o_id']; ?></td>
                                                         <td data-column="Item"><?php echo $row['title']; ?></td>
                                                         <td data-column="Quantity"><?php echo $row['quantity']; ?></td>
-                                                        <td data-column="price">$<?php echo $row['price']; ?></td>
+                                                        <td data-column="price">Rs. <?php echo $row['price']; ?></td>
                                                         <td data-column="status">
                                                             <button type="button" class="btn btn-success">
                                                                 <span class="fa fa-check-circle" aria-hidden="true"></span> Delivered

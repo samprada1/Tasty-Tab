@@ -180,7 +180,7 @@ session_start();
                                                         <h5><a href="dishes.php?res_id='.$row['rs_id'].'">'.$row['title'].'</a></h5>
                                                         <p>'.$row['slogan'].'</p>
                                                         <span>Restaurant: '.$row['restaurant_name'].'</span>
-                                                        <div class="price">$'.$row['price'].'</div>
+                                                        <div class="price">Rs. '.$row['price'].'</div>
                                                     </div>
                                                 </div>
                                             </div>';

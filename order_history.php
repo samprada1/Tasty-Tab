@@ -75,7 +75,7 @@ else
     <div class="page-wrapper">
         <div class="container">
             <div class="row">
-                <div class="col-xs-12">
+                <div class="col-xs-12" style="margin-top: 20px;">
                     <h2 class="text-center mb-4">Order History</h2>
                     <?php 
                     $query_history = mysqli_query($db,"select * from users_orders where u_id='".$_SESSION['user_id']."' AND status = 'closed' ORDER BY date DESC");
@@ -96,7 +96,7 @@ else
                                     <strong>Quantity:</strong> <?php echo $row['quantity']; ?>
                                 </div>
                                 <div class="col-md-2">
-                                    <strong>Price:</strong> $<?php echo $row['price']; ?>
+                                    <strong>Price:</strong> Rs. <?php echo $row['price']; ?>
                                 </div>
                                 <div class="col-md-2">
                                     <strong>Date:</strong> <?php echo $row['date']; ?>

@@ -320,6 +320,8 @@ session_start();
 
 									
 									echo  '<li class="nav-item"><a href="your_orders.php" class="nav-link active">My Orders</a> </li>';
+									echo  '<li class="nav-item"><a href="table_reservation.php" class="nav-link active">Table Reservation</a> </li>';
+									echo  '<li class="nav-item"><a href="user_details.php" class="nav-link active">My Profile</a> </li>';
 									echo  '<li class="nav-item"><a href="logout.php" class="nav-link active">Logout</a> </li>';
 							}
 
@@ -366,7 +368,7 @@ session_start();
                                                 <div class="content">
                                                     <h5><a href="dishes.php?res_id='.$r['rs_id'].'">'.$r['title'].'</a></h5>
                                                     <div class="product-name">'.$r['slogan'].'</div>
-                                                    <div class="price-btn-block"> <span class="price">$'.$r['price'].'</span> <a href="dishes.php?res_id='.$r['rs_id'].'" class="btn theme-btn-dash pull-right">Order Now</a> </div>
+                                                    <div class="price-btn-block"> <span class="price">Rs. '.$r['price'].'</span> <a href="dishes.php?res_id='.$r['rs_id'].'" class="btn theme-btn-dash pull-right">Order Now</a> </div>
                                                 </div>
                                                 
                                             </div>
