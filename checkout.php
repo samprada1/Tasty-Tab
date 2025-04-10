@@ -19,21 +19,80 @@ if(empty($_SESSION["user_id"]))
 	header('location:login.php');
 }
 else{
+    // Improved discount validation and calculation
+    function validateDiscount($code, $total) {
+        // You can expand this array with more promo codes
+        $valid_promos = [
+            'SAM345' => [
+                'percentage' => 30,
+                'min_order' => 500,
+                'expiry' => '2024-12-31'
+            ]
+        ];
+        
+        if(isset($valid_promos[$code])) {
+            $promo = $valid_promos[$code];
+            
+            // Check minimum order value
+            if($total < $promo['min_order']) {
+                return [
+                    'valid' => false,
+                    'message' => 'Minimum order value of Rs. ' . $promo['min_order'] . ' required'
+                ];
+            }
+            
+            // Check expiry
+            if(strtotime($promo['expiry']) < time()) {
+                return [
+                    'valid' => false,
+                    'message' => 'Promo code has expired'
+                ];
+            }
+            
+            return [
+                'valid' => true,
+                'percentage' => $promo['percentage']
+            ];
+        }
+        
+        return [
+            'valid' => false,
+            'message' => 'Invalid promo code'
+        ];
+    }
+
     $item_total = 0;
     foreach ($_SESSION["cart_item"] as $item)
     {
         $item_total += ($item["price"]*$item["quantity"]);
     }
 
+    // Apply discount with validation
+    if(isset($_GET['discount']) && $_GET['discount'] == '30') {
+        $promo_result = validateDiscount('SAM345', $item_total);
+        if($promo_result['valid']) {
+            $original_total = $item_total;
+            $discount = $item_total * ($promo_result['percentage'] / 100);
+            $item_total = $item_total - $discount;
+            $discount_message = "✓ Promo code SAM345 applied successfully!";
+        } else {
+            $discount_message = "❌ " . $promo_result['message'];
+        }
+    }
+
     if(isset($_POST['submit'])) {
         $payment_method = $_POST['mod'];
         
         if($payment_method == 'COD') {
-            // Handle Cash on Delivery
             foreach ($_SESSION["cart_item"] as $item) {
+                $price = $item["price"] * $item["quantity"];
+                if(isset($_GET['discount']) && $_GET['discount'] == '30') {
+                    $price = $price * 0.7; // Apply 30% discount
+                }
+                
                 $SQL = "INSERT INTO users_orders(u_id, title, quantity, price, payment_method, payment_status, status) 
                         VALUES ('".$_SESSION["user_id"]."', '".$item["title"]."', '".$item["quantity"]."', 
-                                '".$item["price"]."', 'COD', 'pending', 'in process')";
+                                '".$price."', 'COD', 'pending', 'in process')";
                 mysqli_query($db, $SQL);
             }
             
@@ -42,7 +101,6 @@ else{
             function_alert();
         } else if($payment_method == 'khalti') {
             // Khalti payment will be handled by the JavaScript
-            // No need to process here as it's handled by initiate_payment.php
         }
     }
 ?>
@@ -63,6 +121,13 @@ else{
     <link href="css/style.css" rel="stylesheet">
     <!-- Khalti SDK -->
     <script src="https://khalti.s3.ap-south-1.amazonaws.com/KPG/dist/2020.12.22.0.0.0/khalti-checkout.iffe.js"></script>
+    <style>
+        /* Payment option image size control */
+        .payment-options img {
+            max-width: 60px;
+            height: auto;
+        }
+    </style>
 </head>
 <body>
     
@@ -132,31 +197,85 @@ else{
                                 <div class="col-sm-12">
                                     <div class="cart-totals margin-b-20">
                                         <div class="cart-totals-title">
-                                            <h4>Cart Summary</h4> </div>
+                                            <h4>Cart Summary</h4>
+                                        </div>
                                         <div class="cart-totals-fields">
-										
                                             <table class="table">
-											<tbody>
-                                          
-												 
-											   
-                                                    <tr>
-                                                        <td>Cart Subtotal</td>
-                                                        <td> <?php echo "Rs. ".$item_total; ?></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Delivery Charges</td>
-                                                        <td>Free</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="text-color"><strong>Total</strong></td>
-                                                        <td class="text-color"><strong> <?php echo "Rs. ".$item_total; ?></strong></td>
-                                                    </tr>
+                                                <tbody>
+                                                    <?php
+                                                    // First show individual items with their prices
+                                                    foreach ($_SESSION["cart_item"] as $item) {
+                                                        $original_item_price = $item["price"] * $item["quantity"];
+                                                        if(isset($_GET['discount']) && $_GET['discount'] == '30') {
+                                                            $discounted_price = $original_item_price * 0.7;
+                                                            ?>
+                                                            <tr>
+                                                                <td><?php echo $item["title"]; ?> (x<?php echo $item["quantity"]; ?>)</td>
+                                                                <td>
+                                                                    <span style="text-decoration: line-through; color: #999;">Rs. <?php echo number_format($original_item_price, 2); ?></span><br>
+                                                                    <span style="color: #65BE9C;">Rs. <?php echo number_format($discounted_price, 2); ?></span>
+                                                                </td>
+                                                            </tr>
+                                                            <?php
+                                                        } else {
+                                                            ?>
+                                                            <tr>
+                                                                <td><?php echo $item["title"]; ?> (x<?php echo $item["quantity"]; ?>)</td>
+                                                                <td>Rs. <?php echo number_format($original_item_price, 2); ?></td>
+                                                            </tr>
+                                                            <?php
+                                                        }
+                                                    }
+
+                                                    if(isset($_GET['discount']) && $_GET['discount'] == '30') {
+                                                        $discount = $item_total * 0.3;
+                                                        $discounted_total = $item_total - $discount;
+                                                        ?>
+                                                        <tr>
+                                                            <td colspan="2"><hr></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Original Total</td>
+                                                            <td style="text-decoration: line-through; color: #999;">Rs. <?php echo number_format($original_total, 2); ?></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Discount (30%)</td>
+                                                            <td style="color: #65BE9C;">- Rs. <?php echo number_format($discount, 2); ?></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Delivery Charges</td>
+                                                            <td>Free</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-color"><strong>Final Total</strong></td>
+                                                            <td class="text-color" style="color: #65BE9C;"><strong>Rs. <?php echo number_format($discounted_total, 2); ?></strong></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="2" style="text-align: center; color: #65BE9C; padding-top: 10px;">
+                                                                ✓ Promo code SAM345 applied successfully!
+                                                            </td>
+                                                        </tr>
+                                                        <?php
+                                                        // Update item_total for payment processing
+                                                        $item_total = $discounted_total;
+                                                    } else {
+                                                        ?>
+                                                        <tr>
+                                                            <td>Cart Subtotal</td>
+                                                            <td>Rs. <?php echo $item_total; ?></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Delivery Charges</td>
+                                                            <td>Free</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-color"><strong>Total</strong></td>
+                                                            <td class="text-color"><strong>Rs. <?php echo $item_total; ?></strong></td>
+                                                        </tr>
+                                                        <?php
+                                                    }
+                                                    ?>
                                                 </tbody>
-												
-												
-												
-												
                                             </table>
                                         </div>
                                     </div>
@@ -191,32 +310,21 @@ else{
                         <div class="container">
                             <div class="row">
                                 <div class="col-xs-12 col-sm-3 payment-options color-gray">
-                                    <h5>Payment Options</h5>
+                                    <h5>Payment Option</h5>
                                     <ul>
                                         <li>
-                                            <a href="#"> <img src="images/paypal.png" alt="Paypal"> </a>
-                                        </li>
-                                        <li>
-                                            <a href="#"> <img src="images/mastercard.png" alt="Mastercard"> </a>
-                                        </li>
-                                        <li>
-                                            <a href="#"> <img src="images/maestro.png" alt="Maestro"> </a>
-                                        </li>
-                                        <li>
-                                            <a href="#"> <img src="images/stripe.png" alt="Stripe"> </a>
-                                        </li>
-                                        <li>
-                                            <a href="#"> <img src="images/bitcoin.png" alt="Bitcoin"> </a>
+                                            <a href="#"> <img src="images/khalti.png" alt="Khalti"> </a>
                                         </li>
                                     </ul>
                                 </div>
                                 <div class="col-xs-12 col-sm-4 address color-gray">
                                     <h5>Address</h5>
                                     <p>Kathmandu, Nepal</p>
-                                    <h5>Phone: 9800000000</h5> </div>
+                                    <h5>Phone: 9800000000</h5>
+                                </div>
                                 <div class="col-xs-12 col-sm-5 additional-info color-gray">
                                     <h5>Addition informations</h5>
-                                   <p>Join thousands of other restaurants who benefit from having partnered with us.</p>
+                                    <p>Join thousands of other restaurants who benefit from having partnered with us.</p>
                                 </div>
                             </div>
                         </div>

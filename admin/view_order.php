@@ -94,27 +94,9 @@ popUpWin = open(URLStr,'popUpWin', 'toolbar=no,location=no,directories=no,status
                    <ul id="sidebarnav">
                         <li class="nav-devider"></li>
                         <li class="nav-label">Home</li>
-                        <li> <a href="dashboard.php"><i class="fa fa-tachometer"></i><span>Dashboard</span></a></li>
-                        <li class="nav-label">Log</li>
-                        <li> <a href="all_users.php">  <span><i class="fa fa-user f-s-20 "></i></span><span>Users</span></a></li>
-                        <li> <a class="has-arrow  " href="#" aria-expanded="false"><i class="fa fa-archive f-s-20 color-warning"></i><span class="hide-menu">Restaurant</span></a>
-                            <ul aria-expanded="false" class="collapse">
-								<li><a href="all_restaurant.php">All Restaurants</a></li>
-								<li><a href="add_category.php">Add Category</a></li>
-                                <li><a href="add_restaurant.php">Add Restaurant</a></li>
-                                
-                            </ul>
-                        </li>
-                      <li> <a class="has-arrow  " href="#" aria-expanded="false"><i class="fa fa-cutlery" aria-hidden="true"></i><span class="hide-menu">Menu</span></a>
-                            <ul aria-expanded="false" class="collapse">
-								<li><a href="all_menu.php">All Menues</a></li>
-								<li><a href="add_menu.php">Add Menu</a></li>
-                              
-                                
-                            </ul>
-                        </li>
-						 <li> <a href="all_orders.php"><i class="fa fa-shopping-cart" aria-hidden="true"></i><span>Orders</span></a></li>
-                         
+                        <li><a href="staff_dashboard.php"><i class="fa fa-tachometer"></i><span>Dashboard</span></a></li>
+                        <li class="nav-label">Orders</li>
+                        <li class="orders-section"><a href="staff_orders.php"><i class="fa fa-shopping-cart"></i><span>View Orders</span></a></li>
                     </ul>
                 </nav>
           
@@ -135,11 +117,11 @@ popUpWin = open(URLStr,'popUpWin', 'toolbar=no,location=no,directories=no,status
                         <div class="col-lg-12">
                         <div class="card card-outline-primary">
                             <div class="card-header">
-                                <h4 class="m-b-0 text-white">View Order</h4>
+                                <h4 class="m-b-0 text-white">Order Details</h4>
                             </div>
                              
                                 <div class="table-responsive m-t-20">
-                                    <table id="myTable" class="table table-bordered table-striped">
+                                    <table class="table table-bordered table-striped">
                                        
                                         <tbody>
                                            <?php
@@ -152,48 +134,42 @@ popUpWin = open(URLStr,'popUpWin', 'toolbar=no,location=no,directories=no,status
 												?>
 											
 											<tr>
-													<td><strong>Username:</strong></td>
-												    <td><center><?php echo $rows['username']; ?></center></td>
+													<td><strong>Order ID:</strong></td>
+												    <td><center>#<?php echo $rows['o_id']; ?></center></td>
 													   <td><center>
 													   <a href="javascript:void(0);" onClick="popUpWindow('order_update.php?form_id=<?php echo htmlentities($rows['o_id']);?>');" title="Update order">
-															 <button type="button" class="btn btn-primary">Update Order Status</button></a>
+															 <button type="button" class="btn btn-primary">Update Status</button></a>
 															 </center>
 											 </td>
 												  
 																																					
 											</tr>	
 											<tr>
-												<td><strong>Title:</strong></td>
-												    <td><center><?php echo $rows['title']; ?></center></td>
+												<td><strong>Customer:</strong></td>
+												    <td><center><?php echo $rows['username']; ?></center></td>
 													    <td><center>
-													   <a href="javascript:void(0);" onClick="popUpWindow('userprofile.php?newform_id=<?php echo htmlentities($rows['o_id']);?>');" title="Update order">
-														<button type="button" class="btn btn-primary">View User Detials</button></a>
+													   <a href="javascript:void(0);" onClick="popUpWindow('userprofile.php?newform_id=<?php echo htmlentities($rows['o_id']);?>');" title="View customer">
+														<button type="button" class="btn btn-info">View Customer</button></a>
 											
 													   </center></td>
 												   																								
 											</tr>	
 											<tr>
-													<td><strong>Quantity:</strong></td>
-												    <td><center><?php echo $rows['quantity']; ?></center></td>
+													<td><strong>Item:</strong></td>
+												    <td colspan="2"><center><?php echo $rows['title']; ?></center></td>
 													  
 												   																							
 											</tr>
 											<tr>
-													<td><strong>Price:</strong></td>
-												    <td><center>Rs. <?php echo $rows['price']; ?></center></td>
+													<td><strong>Quantity:</strong></td>
+												    <td colspan="2"><center><?php echo $rows['quantity']; ?></center></td>
 													   
 												   																							
 											</tr>
 											<tr>
-													<td><strong>Address:</strong></td>
-												    <td><center><?php echo $rows['address']; ?></center></td>
-													  
-												   																							
-											</tr>
-											<tr>
-													<td><strong>Date:</strong></td>
-												     <td><center><?php echo $rows['date']; ?></center></td>
-													  
+													<td><strong>Price:</strong></td>
+												    <td colspan="2"><center>Rs. <?php echo $rows['price']; ?></center></td>
+													   
 												   																							
 											</tr>
 											<tr>
@@ -234,6 +210,10 @@ popUpWin = open(URLStr,'popUpWin', 'toolbar=no,location=no,directories=no,status
 																			?>
 													  
 												   																							
+											</tr>
+											<tr>
+												<td><strong>Date:</strong></td>
+												<td colspan="2"><center><?php echo $rows['date']; ?></center></td>
 											</tr>
 											
 																				

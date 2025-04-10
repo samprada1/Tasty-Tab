@@ -22,7 +22,15 @@ include_once 'product-action.php';
     <link href="css/font-awesome.min.css" rel="stylesheet">
     <link href="css/animsition.min.css" rel="stylesheet">
     <link href="css/animate.css" rel="stylesheet">
-    <link href="css/style.css" rel="stylesheet"> </head>
+    <link href="css/style.css" rel="stylesheet">
+    <style>
+        /* Payment option image size control */
+        .payment-options img {
+            max-width: 60px;
+            height: auto;
+        }
+    </style>
+</head>
 
 <body>
     
@@ -157,22 +165,36 @@ $item_total += ($item["price"]*$item["quantity"]);
                                         <p>TOTAL</p>
                                         <h3 class="value"><strong><?php echo "Rs. ".$item_total; ?></strong></h3>
                                         <p>Free Delivery!</p>
+
+                                        <!-- Promo Code Section -->
+                                        <div class="promo-section" style="margin: 15px 0; padding: 15px 0; border-top: 1px dashed #ddd; border-bottom: 1px dashed #ddd;">
+                                            <p style="color: #65BE9C; margin-bottom: 10px;">Use promo code SAM345 to get 30% off!</p>
+                                            <div class="input-group">
+                                                <input type="text" id="promoCode" class="form-control" placeholder="Enter promo code" style="border-radius: 4px 0 0 4px;">
+                                                <span class="input-group-btn">
+                                                    <button class="btn btn-primary" type="button" onclick="applyPromo()" style="border-radius: 0 4px 4px 0;">Apply</button>
+                                                </span>
+                                            </div>
+                                            <div id="promoMessage" style="margin-top: 5px; font-size: 12px;"></div>
+                                        </div>
+
+                                        <div id="discountedTotal" style="display: none;">
+                                            <p style="text-decoration: line-through; color: #999;">Original: Rs. <?php echo $item_total; ?></p>
+                                            <h3 class="value" style="color: #65BE9C;"><strong>Discounted: Rs. <span id="finalTotal"><?php echo $item_total; ?></span></strong></h3>
+                                        </div>
+
                                         <?php
                                         if($item_total==0){
                                         ?>
-
-                                        
                                         <a href="checkout.php?res_id=<?php echo $_GET['res_id'];?>&action=check"  class="btn btn-danger btn-lg disabled">Checkout</a>
-
                                         <?php
                                         }
                                         else{   
                                         ?>
-                                        <a href="checkout.php?res_id=<?php echo $_GET['res_id'];?>&action=check"  class="btn btn-success btn-lg active">Checkout</a>
+                                        <a href="checkout.php?res_id=<?php echo $_GET['res_id'];?>&action=check" id="checkoutBtn" class="btn btn-success btn-lg active">Checkout</a>
                                         <?php   
                                         }
                                         ?>
-
                                     </div>
                                 </div>
 								
@@ -260,22 +282,10 @@ $item_total += ($item["price"]*$item["quantity"]);
                         <div class="container">
                             <div class="row">
                                 <div class="col-xs-12 col-sm-3 payment-options color-gray">
-                                    <h5>Payment Options</h5>
+                                    <h5>Payment Option</h5>
                                     <ul>
                                         <li>
-                                            <a href="#"> <img src="images/paypal.png" alt="Paypal"> </a>
-                                        </li>
-                                        <li>
-                                            <a href="#"> <img src="images/mastercard.png" alt="Mastercard"> </a>
-                                        </li>
-                                        <li>
-                                            <a href="#"> <img src="images/maestro.png" alt="Maestro"> </a>
-                                        </li>
-                                        <li>
-                                            <a href="#"> <img src="images/stripe.png" alt="Stripe"> </a>
-                                        </li>
-                                        <li>
-                                            <a href="#"> <img src="images/bitcoin.png" alt="Bitcoin"> </a>
+                                            <a href="#"> <img src="images/khalti.png" alt="Khalti"> </a>
                                         </li>
                                     </ul>
                                 </div>
@@ -441,6 +451,43 @@ $item_total += ($item["price"]*$item["quantity"]);
     <script src="js/jquery.isotope.min.js"></script>
     <script src="js/headroom.js"></script>
     <script src="js/foodpicky.min.js"></script>
+
+    <script>
+        function applyPromo() {
+            const promoCode = document.getElementById('promoCode').value.trim().toUpperCase();
+            const promoMessage = document.getElementById('promoMessage');
+            const discountedTotal = document.getElementById('discountedTotal');
+            const finalTotal = document.getElementById('finalTotal');
+            const originalTotal = <?php echo $item_total; ?>;
+            const checkoutBtn = document.getElementById('checkoutBtn');
+
+            if (promoCode === 'SAM345') {
+                // Calculate 30% discount
+                const discount = originalTotal * 0.3;
+                const discountedAmount = originalTotal - discount;
+
+                // Update UI
+                promoMessage.innerHTML = '<span style="color: #65BE9C;">✓ Promo code applied successfully!</span>';
+                discountedTotal.style.display = 'block';
+                finalTotal.textContent = discountedAmount.toFixed(2);
+
+                // Update checkout link to include discount
+                if (checkoutBtn) {
+                    const currentHref = checkoutBtn.getAttribute('href');
+                    checkoutBtn.setAttribute('href', currentHref + '&discount=30');
+                }
+            } else {
+                promoMessage.innerHTML = '<span style="color: #dc3545;">Invalid promo code. Please try again.</span>';
+                discountedTotal.style.display = 'none';
+                
+                // Remove discount from checkout link
+                if (checkoutBtn) {
+                    const currentHref = checkoutBtn.getAttribute('href');
+                    checkoutBtn.setAttribute('href', currentHref.replace('&discount=30', ''));
+                }
+            }
+        }
+    </script>
 </body>
 
 </html>

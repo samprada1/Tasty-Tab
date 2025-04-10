@@ -18,7 +18,13 @@ if(isset($_POST['submit']))
 	                        if(is_array($row))
 								{
                                     	$_SESSION["adm_id"] = $row['adm_id'];
-										header("refresh:1;url=dashboard.php");
+                                        $_SESSION["user_type"] = $row['user_type'];
+                                        
+                                        if($row['user_type'] == 'staff') {
+                                            header("refresh:1;url=staff_dashboard.php");
+                                        } else {
+                                            header("refresh:1;url=dashboard.php");
+                                        }
 	                            } 
 							else
 							    {

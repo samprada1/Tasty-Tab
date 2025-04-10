@@ -223,9 +223,15 @@ if(isset($_POST['submit'] ))
                         <div class="row">
                            <div class="col-xs-12 col-sm-3 payment-options color-gray">
                               <h5>Payment Option</h5>
+                              <style>
+                                 .payment-options img {
+                                    max-width: 60px;
+                                    height: auto;
+                                 }
+                              </style>
                               <ul>
                                  <li>
-                                    <a href="#"> <img src="images/paypal.png" alt="Paypal"> </a>
+                                    <a href="#"> <img src="images/khalti.png" alt="Khalti"> </a>
                                  </li>
                               </ul>
                            </div>

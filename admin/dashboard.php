@@ -8,6 +8,10 @@ if(empty($_SESSION["adm_id"]))
 {
 	header('location:index.php');
 }
+else if($_SESSION["user_type"] == "staff")
+{
+    header('location:staff_dashboard.php');
+}
 else
 {
 ?>
@@ -96,6 +100,7 @@ else
                             </ul>
                         </li>
 						 <li> <a href="all_orders.php"><i class="fa fa-shopping-cart" aria-hidden="true"></i><span>Orders</span></a></li>
+                        <li> <a href="all_reservations.php"><i class="fa fa-calendar" aria-hidden="true"></i><span>Table Reservations</span></a></li>
                          
                     </ul>
                 </nav>
@@ -268,10 +273,10 @@ else
                         <div class="card p-30">
                             <div class="media">
                                 <div class="media-left meida media-middle"> 
-                                    <span><i class="fa fa-usd f-s-40" aria-hidden="true"></i></span>
+                                    <span><i class="fa fa-money f-s-40" aria-hidden="true"></i></span>
                                 </div>
                                 <div class="media-body media-text-right">
-                                    <h2><?php 
+                                    <h2>Rs. <?php 
                                         $result = mysqli_query($db, 'SELECT SUM(price) AS value_sum FROM users_orders WHERE status = "closed"'); 
                                         $row = mysqli_fetch_assoc($result); 
                                         $sum = $row['value_sum'];
@@ -297,7 +302,6 @@ else
 
 </body>
 
-</html>
-<?php
+</html><?php
 }
 ?>

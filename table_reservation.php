@@ -9,23 +9,14 @@ if(empty($_SESSION["user_id"])) {
     header('location:login.php');
 }
 
-if(isset($_POST['submit'])) {
-    $user_id = $_SESSION["user_id"];
-    $restaurant_id = $_POST['restaurant'];
-    $date = $_POST['date'];
-    $time = $_POST['time'];
-    $guests = $_POST['guests'];
-    $special_requests = $_POST['special_requests'];
-    
-    $SQL = "INSERT INTO table_reservations(user_id, restaurant_id, reservation_date, reservation_time, guests, special_requests, status) 
-            VALUES ('$user_id', '$restaurant_id', '$date', '$time', '$guests', '$special_requests', 'pending')";
-    
-    if(mysqli_query($db, $SQL)) {
-        $success = "Table reservation request submitted successfully!";
-    } else {
-        $error = "Error submitting reservation. Please try again.";
-    }
-}
+// Fetch user's reservations
+$user_id = $_SESSION["user_id"];
+$reservations_query = "SELECT tr.*, r.title as restaurant_name 
+                      FROM table_reservations tr 
+                      JOIN restaurant r ON tr.restaurant_id = r.rs_id 
+                      WHERE tr.user_id = $user_id 
+                      ORDER BY tr.reservation_date DESC, tr.reservation_time DESC";
+$reservations_result = mysqli_query($db, $reservations_query);
 ?>
 
 <head>
@@ -45,7 +36,7 @@ if(isset($_POST['submit'])) {
             font-family: 'Helvetica Neue', Arial, sans-serif;
         }
         .container {
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 120px 20px 40px 20px;
             box-sizing: border-box;
@@ -72,41 +63,59 @@ if(isset($_POST['submit'])) {
             border-color: rgba(255,255,255,0.5);
             padding: 0.25rem 0.5rem;
         }
-        .reservation-form {
+        .reservation-card {
             background: #fff;
-            padding: 30px;
+            padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            margin-top: 20px;
-        }
-        .form-group {
             margin-bottom: 20px;
         }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
+        .reservation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .reservation-title {
+            font-size: 20px;
+            font-weight: 600;
             color: #333;
         }
-        .form-control {
-            width: 100%;
-            height: 45px;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
+        .reservation-status {
+            padding: 5px 10px;
             border-radius: 5px;
-            box-sizing: border-box;
-            transition: border-color 0.3s ease;
+            font-weight: 500;
         }
-        .form-control:focus {
-            border-color: #65BE9C;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(101, 190, 156, 0.2);
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
         }
-        textarea.form-control {
-            height: 100px;
-            resize: vertical;
+        .status-confirmed {
+            background-color: #d4edda;
+            color: #155724;
         }
-        .btn-reserve {
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .reservation-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .detail-item {
+            margin-bottom: 10px;
+        }
+        .detail-label {
+            font-weight: 500;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .detail-value {
+            color: #333;
+        }
+        .btn-add-reservation {
             background: #65BE9C;
             color: white;
             padding: 12px 30px;
@@ -116,55 +125,30 @@ if(isset($_POST['submit'])) {
             font-size: 16px;
             font-weight: 600;
             transition: all 0.3s ease;
-            width: auto;
+            text-decoration: none;
             display: inline-block;
+            margin-bottom: 20px;
         }
-        .btn-reserve:hover {
+        .btn-add-reservation:hover {
             background: #54a987;
             transform: translateY(-2px);
+            color: white;
         }
-        .alert {
-            margin-bottom: 20px;
-            padding: 15px;
-            border-radius: 5px;
+        .no-reservations {
+            text-align: center;
+            padding: 40px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
-        .alert-success {
-            background-color: #d4edda;
-            border-color: #c3e6cb;
-            color: #155724;
-        }
-        .alert-danger {
-            background-color: #f8d7da;
-            border-color: #f5c6cb;
-            color: #721c24;
-        }
-        .footer {
-            background: #1a1a1a;
-            color: #fff;
-            padding: 40px 0;
-            margin-top: 60px;
-        }
-        .color-gray {
-            color: #aaa;
-        }
-        .footer h5 {
-            color: #fff;
+        .no-reservations p {
+            color: #666;
             margin-bottom: 20px;
         }
-        .footer ul {
-            list-style: none;
-            padding: 0;
-        }
-        .footer p {
-            margin-bottom: 10px;
-        }
-        @media (max-width: 768px) {
-            .container {
-                padding-top: 100px;
-            }
-            .navbar-brand img {
-                max-height: 40px;
-            }
+        /* Payment option image size control */
+        .payment-options img {
+            max-width: 60px;
+            height: auto;
         }
     </style>
 </head>
@@ -206,69 +190,46 @@ if(isset($_POST['submit'])) {
 
     <div class="page-wrapper">
         <div class="container">
-            <div class="row">
-                <div class="col-md-8 offset-md-2">
-                    <div class="reservation-form">
-                        <h2 class="text-center mb-4">Table Reservation</h2>
-                        
-                        <?php if(isset($success)) { ?>
-                            <div class="alert alert-success">
-                                <?php echo $success; ?>
+            <a href="add_table_reservation.php" class="btn-add-reservation">+ Add New Reservation</a>
+            
+            <?php if(mysqli_num_rows($reservations_result) > 0): ?>
+                <?php while($reservation = mysqli_fetch_array($reservations_result)): ?>
+                    <div class="reservation-card">
+                        <div class="reservation-header">
+                            <h3 class="reservation-title"><?php echo $reservation['restaurant_name']; ?></h3>
+                            <span class="reservation-status status-<?php echo $reservation['status']; ?>">
+                                <?php echo ucfirst($reservation['status']); ?>
+                            </span>
+                        </div>
+                        <div class="reservation-details">
+                            <div class="detail-item">
+                                <div class="detail-label">Date</div>
+                                <div class="detail-value"><?php echo date('F j, Y', strtotime($reservation['reservation_date'])); ?></div>
                             </div>
-                        <?php } ?>
-                        
-                        <?php if(isset($error)) { ?>
-                            <div class="alert alert-danger">
-                                <?php echo $error; ?>
+                            <div class="detail-item">
+                                <div class="detail-label">Time</div>
+                                <div class="detail-value"><?php echo date('g:i A', strtotime($reservation['reservation_time'])); ?></div>
                             </div>
-                        <?php } ?>
-                        
-                        <form method="post" action="">
-                            <div class="form-group">
-                                <label for="restaurant">Select Restaurant</label>
-                                <select class="form-control" id="restaurant" name="restaurant" required>
-                                    <option value="">Choose a restaurant</option>
-                                    <?php
-                                    $query = mysqli_query($db, "SELECT * FROM restaurant");
-                                    while($row = mysqli_fetch_array($query)) {
-                                        echo '<option value="'.$row['rs_id'].'">'.$row['title'].'</option>';
-                                    }
-                                    ?>
-                                </select>
+                            <div class="detail-item">
+                                <div class="detail-label">Number of Guests</div>
+                                <div class="detail-value"><?php echo $reservation['guests']; ?></div>
                             </div>
-                            
-                            <div class="form-group">
-                                <label for="date">Date</label>
-                                <input type="date" class="form-control" id="date" name="date" required min="<?php echo date('Y-m-d'); ?>">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="time">Time</label>
-                                <input type="time" class="form-control" id="time" name="time" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="guests">Number of Guests</label>
-                                <select class="form-control" id="guests" name="guests" required>
-                                    <option value="">Select number of guests</option>
-                                    <?php for($i = 1; $i <= 10; $i++) { ?>
-                                        <option value="<?php echo $i; ?>"><?php echo $i; ?> <?php echo $i == 1 ? 'Guest' : 'Guests'; ?></option>
-                                    <?php } ?>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="special_requests">Special Requests (Optional)</label>
-                                <textarea class="form-control" id="special_requests" name="special_requests" rows="3"></textarea>
-                            </div>
-                            
-                            <div class="text-center">
-                                <button type="submit" name="submit" class="btn btn-reserve">Make Reservation</button>
-                            </div>
-                        </form>
+                            <?php if(!empty($reservation['special_requests'])): ?>
+                                <div class="detail-item">
+                                    <div class="detail-label">Special Requests</div>
+                                    <div class="detail-value"><?php echo $reservation['special_requests']; ?></div>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <div class="no-reservations">
+                    <h3>No Reservations Found</h3>
+                    <p>You haven't made any table reservations yet.</p>
+                    <a href="add_table_reservation.php" class="btn-add-reservation">Make Your First Reservation</a>
                 </div>
-            </div>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -277,10 +238,10 @@ if(isset($_POST['submit'])) {
             <div class="bottom-footer">
                 <div class="row">
                     <div class="col-xs-12 col-sm-3 payment-options color-gray">
-                        <h5>Payment Options</h5>
+                        <h5>Payment Option</h5>
                         <ul>
                             <li>
-                                <a href="#"> <img src="images/paypal.png" alt="Paypal"> </a>
+                                <a href="#"> <img src="images/khalti.png" alt="Khalti"> </a>
                             </li>
                         </ul>
                     </div>
@@ -307,4 +268,5 @@ if(isset($_POST['submit'])) {
     <script src="js/headroom.js"></script>
     <script src="js/foodpicky.min.js"></script>
 </body>
+</html> 
 </html> 

@@ -75,6 +75,11 @@ session_start();
           padding-top: 70px;
         }
       }
+      /* Payment option image size control */
+      .payment-options img {
+          max-width: 60px;
+          height: auto;
+      }
     </style>
 </head>
 
@@ -119,6 +124,11 @@ session_start();
                         <li class="col-xs-12 col-sm-4 link-item"><span>2</span><a href="#">Pick Your favorite food</a></li>
                         <li class="col-xs-12 col-sm-4 link-item"><span>3</span><a href="#">Order and Pay</a></li>
                     </ul>
+                </div>
+            </div>
+            <div class="promo-banner" style="background: #65BE9C; color: white; padding: 15px 0; text-align: center; margin-bottom: 20px;">
+                <div class="container">
+                    <h4 style="margin: 0; font-family: 'Poppins', sans-serif;">🎉 Special Offer! Use code <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px;">SAM345</span> to get 30% OFF on your order!</h4>
                 </div>
             </div>
             <div class="inner-page-hero bg-image" data-image-src="images/img/pimg.jpg">
@@ -261,7 +271,7 @@ session_start();
                             <h5>Payment Option</h5>
                             <ul>
                                 <li>
-                                    <a href="#"> <img src="images/paypal.png" alt="Paypal"> </a>
+                                    <a href="#"> <img src="images/khalti.png" alt="Khalti"> </a>
                                 </li>
                             </ul>
                         </div>

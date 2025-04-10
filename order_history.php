@@ -50,6 +50,10 @@ else
             margin-bottom: 20px;
             padding: 15px;
         }
+        .payment-options img {
+            max-width: 60px;
+            height: auto;
+        }
     </style>
 </head>
 
@@ -116,7 +120,7 @@ else
                     <h5>Payment Option</h5>
                     <ul>
                         <li>
-                            <a href="#"> <img src="images/paypal.png" alt="Paypal"> </a>
+                            <a href="#"> <img src="images/khalti.png" alt="Khalti"> </a>
                         </li>
                     </ul>
                 </div>

@@ -107,8 +107,15 @@ if(isset($_POST['submit']))
 	
 	                        if(is_array($row)) 
 								{
-                                    	$_SESSION["user_id"] = $row['u_id']; 
-										 header("refresh:1;url=index.php"); 
+                                    	$_SESSION["user_id"] = $row['u_id'];
+                                        $_SESSION["user_type"] = $row['user_type']; // Add user type to session
+                                        
+                                        // Redirect based on user type
+                                        if($row['user_type'] == 'staff') {
+                                            header("refresh:1;url=admin/staff_dashboard.php");
+                                        } else {
+                                            header("refresh:1;url=index.php");
+                                        }
 	                            } 
 							else
 							    {
@@ -161,9 +168,15 @@ if(isset($_POST['submit']))
                     <div class="row">
                         <div class="col-xs-12 col-sm-3 payment-options color-gray">
                             <h5>Payment Option</h5>
+                            <style>
+                                .payment-options img {
+                                    max-width: 60px;
+                                    height: auto;
+                                }
+                            </style>
                             <ul>
                                 <li>
-                                    <a href="#"> <img src="images/paypal.png" alt="Paypal"> </a>
+                                    <a href="#"> <img src="images/khalti.png" alt="Khalti"> </a>
                                 </li>
                             </ul>
                         </div>

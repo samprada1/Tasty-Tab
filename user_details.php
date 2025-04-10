@@ -52,6 +52,12 @@ $user = mysqli_fetch_assoc($query);
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
+        /* Payment option image size control */
+        .payment-options img {
+            max-width: 60px;
+            height: auto;
+        }
+
         /* Update navbar styles to match the reference */
         .navbar-dark {
             background: transparent !important;

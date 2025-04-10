@@ -67,6 +67,7 @@ session_start();
             max-width: 500px;
             margin: 0 auto;
             box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            position: relative;
         }
 
         .search-input {
@@ -104,6 +105,44 @@ session_start();
             background: #54a987;
         }
 
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 10px;
+            margin-top: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 1000;
+        }
+
+        .search-result-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .search-result-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .search-result-item h5 {
+            margin: 0;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .search-result-item p {
+            margin: 5px 0 0;
+            color: #666;
+            font-size: 12px;
+        }
+
         /* Update navbar styles to match the reference */
         .navbar-dark {
             background: transparent !important;
@@ -127,6 +166,11 @@ session_start();
 
         .navbar-nav {
             font-family: 'Poppins', sans-serif;
+        }
+
+        .navbar-brand img {
+            max-height: 50px;
+            width: auto;
         }
 
         .banner-form {
@@ -170,16 +214,11 @@ session_start();
             gap: 10px;
         }
 
-        .navbar-brand img {
-            max-height: 50px;
-            width: auto;
-        }
-
         /* Restaurant card standardization */
         .restaurant-listing {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 25px;
+            gap: 30px;
             padding: 20px;
             max-width: 1200px;
             margin: 0 auto;
@@ -191,6 +230,8 @@ session_start();
             box-shadow: 0 2px 15px rgba(0,0,0,0.08);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             overflow: hidden;
+            position: relative;
+            width: 100%;
         }
 
         .single-restaurant:hover {
@@ -204,28 +245,23 @@ session_start();
             height: 100%;
             display: flex;
             flex-direction: column;
-            border: none;
-            box-shadow: none;
+            align-items: center;
+            text-align: center;
         }
 
         .restaurant-logo {
-            display: block;
-            width: 100%;
-            text-align: center;
             margin-bottom: 15px;
-            padding: 10px;
         }
 
         .restaurant-logo img {
             width: 120px;
             height: 120px;
-            object-fit: contain;
+            object-fit: cover;
             border-radius: 8px;
         }
 
         .restaurant-info {
-            text-align: left;
-            padding: 0 10px;
+            text-align: center;
         }
 
         .restaurant-wrap h5 {
@@ -250,7 +286,6 @@ session_start();
             .restaurant-listing {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 20px;
-                padding: 15px;
             }
         }
 
@@ -261,17 +296,21 @@ session_start();
             }
         }
 
-        /* Update restaurant filter styles */
+        /* Filter button styles */
         .restaurants-filter {
             margin-bottom: 30px;
-            text-align: right;
+            text-align: center;
         }
 
         .restaurants-filter ul {
+            list-style: none;
             padding: 0;
             margin: 0;
             display: inline-flex;
-            gap: 10px;
+            gap: 15px;
+            background: #f8f9fa;
+            padding: 10px 20px;
+            border-radius: 50px;
         }
 
         .restaurants-filter ul li {
@@ -279,19 +318,30 @@ session_start();
         }
 
         .restaurants-filter ul li a {
+            display: inline-block;
+            padding: 8px 25px;
             color: #333;
             text-decoration: none;
-            padding: 8px 20px;
             border-radius: 25px;
-            font-size: 14px;
+            font-size: 15px;
             transition: all 0.3s ease;
-            background: #f5f5f5;
+            cursor: pointer;
+            background: transparent;
         }
 
-        .restaurants-filter ul li a.selected,
         .restaurants-filter ul li a:hover {
             background: #65BE9C;
             color: white;
+        }
+
+        .restaurants-filter ul li a.selected {
+            background: #65BE9C;
+            color: white;
+        }
+
+        .payment-options img {
+            max-width: 60px;
+            height: auto;
         }
     </style>
 </head>
@@ -340,8 +390,9 @@ session_start();
                 <h1>Online Restaurants</h1>
                 <p>Top restaurants and specials in town</p>
                 <form action="restaurants.php" method="GET" class="search-box">
-                    <input type="text" name="search" class="search-input" placeholder="Enter Search...">
+                    <input type="text" name="search" class="search-input" placeholder="Enter Search..." id="searchInput" autocomplete="off">
                     <button type="submit" class="search-btn">Search food</button>
+                    <div class="search-results" id="searchResults"></div>
                 </form>
             </div>
         </section>
@@ -439,16 +490,17 @@ session_start();
                     </div>
                     <div class="col-sm-8">
                         <div class="restaurants-filter pull-right">
-                            <nav class="primary pull-left">
+                            <nav class="primary">
                                 <ul>
-                                    <li><a href="#" class="selected" data-filter="*">all</a> </li>
-									<?php 
-									$res= mysqli_query($db,"select * from res_category");
-									      while($row=mysqli_fetch_array($res))
-										  {
-											echo '<li><a href="#" data-filter=".'.$row['c_name'].'">'.$row['c_name'].'</a> </li>';
-										  }
-									?>
+                                    <li><a class="selected" data-filter="*">All</a></li>
+                                    <?php 
+                                    $res= mysqli_query($db,"select * from res_category");
+                                    while($row=mysqli_fetch_array($res))
+                                    {
+                                        $categoryName = htmlspecialchars(trim($row['c_name']));
+                                        echo '<li><a data-filter="'.htmlspecialchars($categoryName).'">'.$categoryName.'</a></li>';
+                                    }
+                                    ?>
                                 </ul>
                             </nav>
                         </div>
@@ -458,7 +510,7 @@ session_start();
                 <div class="row">
                     <div class="restaurant-listing">
                         <?php  
-                        $ress = mysqli_query($db,"SELECT r.*, c.c_name 
+                        $ress = mysqli_query($db,"SELECT r.*, c.c_name, c.c_id 
                                                 FROM restaurant r 
                                                 JOIN res_category c ON r.c_id = c.c_id 
                                                 GROUP BY r.title 
@@ -466,7 +518,8 @@ session_start();
                         
                         while($rows = mysqli_fetch_array($ress))
                         {
-                            echo '<div class="single-restaurant all '.$rows['c_name'].'">
+                            $categoryName = htmlspecialchars(trim($rows['c_name']));
+                            echo '<div class="single-restaurant" data-category="'.$categoryName.'">
                                 <div class="restaurant-wrap">
                                     <div class="restaurant-logo">
                                         <a href="dishes.php?res_id='.$rows['rs_id'].'"> 
@@ -486,32 +539,6 @@ session_start();
             </div>
         </section>
 
-        <script>
-            // Initialize Isotope for filtering
-            $(document).ready(function() {
-                var $grid = $('.restaurant-listing').isotope({
-                    itemSelector: '.single-restaurant'
-                });
-
-                // Filter items on button click
-                $('.restaurants-filter ul li a').click(function(e) {
-                    e.preventDefault();
-                    var filterValue = $(this).attr('data-filter');
-                    
-                    // Remove selected class from all and add to current
-                    $('.restaurants-filter ul li a').removeClass('selected');
-                    $(this).addClass('selected');
-                    
-                    if(filterValue === '*') {
-                        $grid.isotope({ filter: '*' });
-                    } else {
-                        $grid.isotope({ filter: filterValue });
-                    }
-                });
-            });
-        </script>
-        
-      
         <footer class="footer">
             <div class="container">
                 
@@ -522,7 +549,7 @@ session_start();
                             <h5>Payment Option</h5>
                             <ul>
                                 <li>
-                                    <a href="#"> <img src="images/paypal.png" alt="Paypal"> </a>
+                                    <a href="#"> <img src="images/khalti.png" alt="Khalti"> </a>
                                 </li>
                             </ul>
                         </div>
@@ -541,16 +568,111 @@ session_start();
             </div>
         </footer>
     
-    
-
-    <script src="js/jquery.min.js"></script>
+    <!-- Load all scripts in correct order -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="js/tether.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/isotope-layout@3/dist/isotope.pkgd.min.js"></script>
     <script src="js/animsition.min.js"></script>
     <script src="js/bootstrap-slider.min.js"></script>
-    <script src="js/jquery.isotope.min.js"></script>
     <script src="js/headroom.js"></script>
     <script src="js/foodpicky.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Initialize restaurant filtering
+            var $grid = $('.restaurant-listing').isotope({
+                itemSelector: '.single-restaurant',
+                layoutMode: 'fitRows'
+            });
+
+            // Debug: Log all available categories
+            $('.single-restaurant').each(function() {
+                console.log('Restaurant category:', $(this).attr('data-category'));
+            });
+
+            $('.restaurants-filter ul li a').on('click', function(e) {
+                e.preventDefault();
+                
+                // Remove selected class from all and add to current
+                $('.restaurants-filter ul li a').removeClass('selected');
+                $(this).addClass('selected');
+                
+                var filterValue = $(this).attr('data-filter');
+                console.log('Filter clicked:', filterValue);
+                
+                if (filterValue === '*') {
+                    $grid.isotope({ filter: '*' });
+                } else {
+                    // Debug: Log the filter selector
+                    console.log('Filter selector:', '[data-category="' + filterValue + '"]');
+                    console.log('Matching elements:', $('.restaurant-listing').find('[data-category="' + filterValue + '"]').length);
+                    
+                    $grid.isotope({ filter: function() {
+                        var category = $(this).attr('data-category');
+                        console.log('Comparing:', category, 'with', filterValue);
+                        return category === filterValue;
+                    }});
+                }
+            });
+
+            // Initialize search functionality
+            const searchInput = $('#searchInput');
+            const searchResults = $('#searchResults');
+            
+            searchInput.on('input', function() {
+                const query = $(this).val().trim();
+                
+                if (query.length < 2) {
+                    searchResults.hide();
+                    return;
+                }
+
+                $.ajax({
+                    url: 'search_food.php',
+                    method: 'POST',
+                    data: { query: query },
+                    success: function(response) {
+                        try {
+                            const results = typeof response === 'string' ? JSON.parse(response) : response;
+                            let html = '';
+                            
+                            if (results.error) {
+                                html = '<div class="search-result-item">Error: ' + results.error + '</div>';
+                            } else if (results && results.length > 0) {
+                                results.forEach(item => {
+                                    html += `
+                                        <div class="search-result-item" onclick="window.location.href='dishes.php?res_id=${item.rs_id}'">
+                                            <h5>${item.title}</h5>
+                                            <p>${item.restaurant_name || ''} - Rs. ${item.price || 'N/A'}</p>
+                                        </div>
+                                    `;
+                                });
+                            } else {
+                                html = '<div class="search-result-item">No results found</div>';
+                            }
+                            
+                            searchResults.html(html).show();
+                        } catch (e) {
+                            console.error('Error:', e);
+                            searchResults.html('<div class="search-result-item">Error processing results</div>').show();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        searchResults.html('<div class="search-result-item">Error searching</div>').show();
+                    }
+                });
+            });
+
+            // Hide results when clicking outside
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.search-box').length) {
+                    searchResults.hide();
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>

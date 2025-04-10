@@ -1,0 +1,1 @@
+<a href="#"> <img src="images/khalti.png" alt="Khalti"> </a> 
